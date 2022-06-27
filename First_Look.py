@@ -54,15 +54,15 @@ n_artists = len(n_artists.index)
 
 # Figures
 
-fig_top_songs = px.bar(top_songs, y='songPlayCount',
-                       x='trackName', title="Most Played Songs (Last 12 Months)", color='artistName')
-# fig_top_songs.update_traces(marker_color='rgb(200,100,225)', marker_line_color='rgb(8,48,107)',
-# marker_line_width=1.5, opacity=0.8)
+fig_top_songs = px.bar(top_songs.sort_values('songPlayCount', ascending=True), x='songPlayCount',
+                       y='trackName', title="Most Played Songs (Last 12 Months)", orientation='h')  # , color='artistName'
+fig_top_songs.update_traces(marker_color='rgb(200,100,225)', marker_line_color='rgb(8,48,107)',
+                            marker_line_width=1.5, opacity=0.8)
 plot(fig_top_songs)
 
 
-fig_top_artists = px.bar(top_artists, y='artistPlayCount',
-                         x='artistName', title="Most Played Artists")
+fig_top_artists = px.bar(top_artists.sort_values('artistPlayCount', ascending=True), x='artistPlayCount',
+                         y='artistName', title="Most Played Artists (Last 12 Months)", orientation='h')  # , color='artistName'
 fig_top_artists.update_traces(marker_color='rgb(100,255,100)', marker_line_color='rgb(8,48,107)',
                               marker_line_width=1.5, opacity=0.8)
 plot(fig_top_artists)
