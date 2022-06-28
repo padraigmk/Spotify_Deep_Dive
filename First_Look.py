@@ -66,3 +66,24 @@ fig_top_artists = px.bar(top_artists.sort_values('artistPlayCount', ascending=Tr
 fig_top_artists.update_traces(marker_color='rgb(100,255,100)', marker_line_color='rgb(8,48,107)',
                               marker_line_width=1.5, opacity=0.8)
 plot(fig_top_artists)
+
+df.dtypes
+
+# df.index = pd.to_datetime(df['endTime'])
+df.endTime = pd.to_datetime(df['endTime'])
+df['month'] = df.endTime.dt.month
+df['year'] = df.endTime.dt.year
+
+monthly = df.groupby(by=[df.month, df.year]
+                     ).count()
+monthly['playCount'] = monthly['endTime']  # rename column
+monthly.drop(monthly.columns.difference(
+    ['playCount', 'month', 'year']), 1, inplace=True)  # drop unecessary columns
+monthly = monthly.reset_index()
+# monthly['year_month'] = monthly['year'] + monthly['month']
+
+monthly_plays = px.bar(monthly, x='month',
+                       y='playCount', title="Most Played Artists (Last 12 Months)", orientation='v')  # , color='artistName'
+fig_top_artists.update_traces(marker_color='rgb(100,255,100)', marker_line_color='rgb(8,48,107)',
+                              marker_line_width=1.5, opacity=0.8)
+plot(monthly_plays)
