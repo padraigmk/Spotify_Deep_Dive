@@ -9,6 +9,7 @@ import numpy as np
 import datetime as dt
 import pandas as pd
 from plotly.offline import plot
+import calendar
 
 
 df0 = pd.read_json(r'MyData\StreamingHistory0.json')
@@ -58,14 +59,14 @@ fig_top_songs = px.bar(top_songs.sort_values('songPlayCount', ascending=True), x
                        y='trackName', title="Most Played Songs (Last 12 Months)", orientation='h')  # , color='artistName'
 fig_top_songs.update_traces(marker_color='rgb(200,100,225)', marker_line_color='rgb(8,48,107)',
                             marker_line_width=1.5, opacity=0.8)
-plot(fig_top_songs)
+# plot(fig_top_songs)
 
 
 fig_top_artists = px.bar(top_artists.sort_values('artistPlayCount', ascending=True), x='artistPlayCount',
                          y='artistName', title="Most Played Artists (Last 12 Months)", orientation='h')  # , color='artistName'
 fig_top_artists.update_traces(marker_color='rgb(100,255,100)', marker_line_color='rgb(8,48,107)',
                               marker_line_width=1.5, opacity=0.8)
-plot(fig_top_artists)
+# plot(fig_top_artists)
 
 df.dtypes
 
@@ -81,6 +82,7 @@ monthly.drop(monthly.columns.difference(
     ['playCount', 'month', 'year']), 1, inplace=True)  # drop unecessary columns
 monthly = monthly.reset_index()
 # monthly['year_month'] = monthly['year'] + monthly['month']
+monthly['month'] = monthly['month'].apply(lambda x: calendar.month_abbr[x])
 
 monthly_plays = px.bar(monthly, x='month',
                        y='playCount', title="Most Played Artists (Last 12 Months)", orientation='v')  # , color='artistName'
