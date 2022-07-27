@@ -51,7 +51,7 @@ top_songs.drop(top_songs.columns.difference(
      ]), 1, inplace=True)  # drop unecessary columns
 
 top_artists = df.groupby(['master_metadata_album_artist_name']).count().sort_values(
-    by=['ms_played'], ascending=False).head(20).reset_index()
+    by=['ms_played'], ascending=False).reset_index()  # head(20)
 top_artists['artistPlayCount'] = top_artists['ts']  # rename column
 top_artists.drop(top_artists.columns.difference(
     ['master_metadata_album_artist_name', 'artistPlayCount']),
@@ -60,7 +60,18 @@ top_artists.drop(top_artists.columns.difference(
 n_songs = df.groupby(['spotify_track_uri']).count()
 n_songs = len(n_songs.index)
 
-df.dtypes
+n_songs_artist = df.drop_duplicates(subset=["spotify_track_uri"]).groupby(
+    ['master_metadata_album_artist_name']).count().sort_values(
+    by=['ms_played'], ascending=False).reset_index()  # head(20)
+n_songs_artist['n_songs'] = n_songs_artist['ts']  # rename column
+n_songs_artist.drop(n_songs_artist.columns.difference(
+    ['master_metadata_album_artist_name', 'n_songs']),
+    1, inplace=True)  # drop unecessary columns
+
+artist_df = n_songs_artist.merge(
+    top_artists, how='inner', on='master_metadata_album_artist_name')
+
+# df.dtypes
 
 df['dt_stamp'] = pd.to_datetime(df['ts'])
 
