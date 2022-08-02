@@ -5,13 +5,14 @@ Created on Tue Jul 19 20:22:47 2022
 @author: padra
 """
 from dash import Dash, html, dcc
+import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
 import os
 import glob
 
 
-app = Dash(__name__)
+app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 colors = {
     'background': '#ffffff',
@@ -19,7 +20,8 @@ colors = {
 }
 
 
-#######################
+# %% Data Transformation
+
 
 # https://stackoverflow.com/questions/20906474/import-multiple-csv-files-into-pandas-and-concatenate-into-one-dataframe
 cwd = os.getcwd()
@@ -54,6 +56,9 @@ top_songs.drop(top_songs.columns.difference(
      'master_metadata_track_name', 'master_metadata_album_artist_name',
      'master_metadata_album_album_name'
      ]), 1, inplace=True)  # drop unecessary columns
+top_songs['master_metadata_track_name'] = [x[:20]
+                                           for x in top_songs['master_metadata_track_name']]
+
 
 top_artists = df.groupby(['master_metadata_album_artist_name']).count().sort_values(
     by=['ms_played'], ascending=False).reset_index()  # head(20)
@@ -91,7 +96,6 @@ df['Day Bin'] = pd.cut(df.dt_stamp.dt.weekday, day_bins, right=False)
 df_day_bin = df.groupby('Day Bin', as_index=False)['ts'].count()
 df_day_bin['day'] = pd.Series(range(0, 7))
 
-#############################
 
 # fig = px.bar(df_day_bin, x="day", y="ts")
 fig = px.bar(top_songs, x="master_metadata_track_name", y="songPlayCount",
@@ -101,46 +105,81 @@ fig.update_layout(xaxis={'visible': False, 'showticklabels': False})
 fig.update_layout(
     plot_bgcolor=colors['background'],
     paper_bgcolor=colors['background'],
-    font_color=colors['text']
+    font_color=colors['text'],
+    legend=dict(
+        yanchor="top",
+        y=0.99,
+        xanchor="left",
+        x=0.99,
+        font=dict(
+                size=12,
+                color="black"
+        ),
+    ),
+    legend_title_text='Song Name'
+
 )
 
 fig2 = px.scatter(artist_df, x="n_songs", y="artistPlayCount",
                   color="master_metadata_album_artist_name", hover_name="master_metadata_album_artist_name",
                   log_y=True, log_x=True, size='artistPlayCount')
 
-app.layout = html.Div(style={'backgroundColor': colors['background']}, children=[
-    html.H1(
-        children='Hello Dash',
-        style={
-            'textAlign': 'center',
-            'color': colors['text']
-        }
-    ),
+# %% Old Layout
 
-    html.Div(children='Dash: A web application framework for your data.',
-             style={
-                 'textAlign': 'center',
-                 'color': colors['text']
-             }),
+# app.layout = html.Div(style={'backgroundColor': colors['background']}, children=[
+#     html.H1(
+#         children='Hello Dash',
+#         style={
+#             'textAlign': 'center',
+#             'color': colors['text']
+#         }
+#     ),
 
-    html.Div(children=[
-        dcc.Graph(id="example-graph",
-                  figure=fig),
-        dcc.Graph(id="example-graph-2",
-                  figure=fig2)
-    ]),
+#     html.Div(children='Dash: A web application framework for your data.',
+#              style={
+#                  'textAlign': 'center',
+#                  'color': colors['text']
+#              }),
 
-    # html.Div(children=[dcc.Graph(
-    #     id='example-graph',
-    #     style={'display': 'inline-block'},
-    #     figure=fig
-    # ),
-    #     dcc.Graph(
-    #     id='example-graph-2',
-    #     style={'display': 'inline-block'},
-    #     figure=fig2
-    # )])
-])
+#     html.Div(children=[
+#         html.Div(
+#             dcc.Graph(id="example-graph",
+#                       figure=fig)),
+#         html.Div(
+#             dcc.Graph(id="example-graph-2",
+#                       figure=fig2))
+#     ]),
+
+#     # html.Div(children=[dcc.Graph(
+#     #     id='example-graph',
+#     #     style={'display': 'inline-block'},
+#     #     figure=fig
+#     # ),
+#     #     dcc.Graph(
+#     #     id='example-graph-2',
+#     #     style={'display': 'inline-block'},
+#     #     figure=fig2
+#     # )])
+# ])
+
+
+# %% New Layout
+
+app.layout = dbc.Container(
+    [
+        html.H1("Iris k-means clustering"),
+        html.Hr(),
+        dbc.Row([
+                dbc.Col(dcc.Graph(id='example-graph', figure=fig), md=6),
+                dbc.Col(dcc.Graph(id='example-graph-2', figure=fig2), md=6),
+                ],
+                align="center",
+                ),
+    ],
+    fluid=True,
+)
+
 
 if __name__ == '__main__':
+    app.run_server(debug=True)
     app.run_server(debug=True)
